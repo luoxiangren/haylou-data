@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haylou.mapper.HealthMapper">
+
+    <select id="getTotHealthRatio"  resultType="java.util.HashMap">
+        select round(c.tot_hrm_day_cnt/c.tot_days_cnt,2) as tot_hrm_day_ratio,
+               round(c.tot_spo_day_cnt/c.tot_days_cnt,2) as tot_spo_day_ratio,
+               round(c.tot_sleep_day_cnt/c.tot_days_cnt,2) as tot_sleep_day_ratio
+        from
+            (
+                select sum(a.hrm_day_cnt)                                    as tot_hrm_day_cnt,
+                       sum(a.spo_day_cnt)                                    as tot_spo_day_cnt,
+                       sum(a.sleep_day_cnt)                                  as tot_sleep_day_cnt,
+                       tot_hrm_day_cnt + tot_spo_day_cnt + tot_sleep_day_cnt as tot_days_cnt
+                from haylou_datawares.dws_health_device_stat_dm_dfs a
+            ) c
+    </select>
+
+    <select id="get6MonStat"  resultType="java.util.HashMap">
+        select pmonth,
+        sum(hrm_day_cnt) as hrm_day_cnt,
+        sum(spo_day_cnt) as spo_day_cnt,
+        sum(sleep_day_cnt) as sleep_day_cnt
+        from haylou_datawares.dws_health_device_stat_dm_dfs
+        where pmonth &lt; toString(toYYYYMM(toStartOfMonth(now())))
+        and pmonth &gt;= toString(toYYYYMM(toStartOfMonth(addMonths(now(), -6))))
+        group by pmonth
+        order by pmonth asc
+    </select>
+
+
+</mapper>

@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haylou.mapper.DeviceMapper">
+
+    <select id="getTotalActiveCnt"  resultType="java.util.HashMap">
+        select count() as active_cnt
+        from haylou_datawares.dwd_app_bind_device_dt_dfs a
+        where a.bind_status = 1
+    </select>
+
+    <select id="getActiveCntByType"  resultType="java.util.HashMap">
+        select a.device_type,round(a.active_cnt*1.0/tot_active_cnt,2) as ratio
+        from
+            (
+                select device_type, count() as active_cnt
+                from haylou_datawares.dwd_app_bind_device_dt_dfs a
+                where a.bind_status = 1
+                group by device_type
+            ) a,(
+                select count() as tot_active_cnt
+                from haylou_datawares.dwd_app_bind_device_dt_dfs a
+                where a.bind_status = 1
+            ) b
+    </select>
+
+    <select id="getLastMonActiveCnt"  resultType="java.util.HashMap">
+        select count() as act_cnt from haylou_datawares.dwd_app_bind_device_dt_dfs a
+        where a.bind_status = 1
+        and a.pdate &gt;= toString(toYYYYMMDD(toStartOfMonth(addMonths(now(),-1))))
+        and a.pdate &lt; toString(toYYYYMMDD(toStartOfMonth(now())))
+        ;
+    </select>
+
+    <select id="getBindCntByTypeAndAge"  resultType="java.util.HashMap">
+        select
+        c.device_type,
+        case when c.fd_age=1 then '17岁以下'
+        when c.fd_age=2 then '18-24'
+        when c.fd_age=3 then '25-30'
+        when c.fd_age=4 then '31-35'
+        when c.fd_age=5 then '36-40'
+        when c.fd_age=6 then '41以上'
+        end as fd_age_desc,
+        c.bind_cnt*1.0/b.tot_bind_cnt as bind_ratio
+        from
+        (
+        select device_type,fd_age,count() as bind_cnt
+        from
+        (
+        select device_type,
+        case
+        when age &lt;= 17 then 1
+        when age &gt;= 18 and age &lt;= 24 then 2
+        when age &gt;= 25 and age &lt;= 30 then 3
+        when age &gt;= 31 and age &lt;= 35 then 4
+        when age &gt;= 36 and age &lt;= 40 then 5
+        else 6 end as fd_age
+        from haylou_datawares.dwd_app_bind_device_dt_dfs
+        where bind_status in (1, 3)
+        ) a
+        group by device_type,fd_age
+        ) c
+        ,
+        (
+        select count() as tot_bind_cnt
+        from haylou_datawares.dwd_app_bind_device_dt_dfs
+        where bind_status in (1, 3)
+        ) b
+        order by fd_age_desc asc
+    </select>
+
+
+    <select id="getBindCnt"  resultType="java.util.HashMap">
+        select count() as tot_bind_cnt
+        from haylou_datawares.dwd_app_bind_device_dt_dfs
+        where bind_status in (1, 3)
+    </select>
+
+</mapper>

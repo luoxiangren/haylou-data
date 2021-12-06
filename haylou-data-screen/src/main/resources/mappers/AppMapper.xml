@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haylou.mapper.AppMapper">
+
+    <select id="getAppActByCountry"  resultType="java.util.HashMap">
+        select a.country_id,active_cnt,round(a.active_cnt*1.0/b.tot_act_cnt,2) as ratio
+        from
+        (
+        select country_id,
+        count() as active_cnt
+        from haylou_datawares.dwd_usr_app_active_dt_dfs
+        where pdate &gt;= toString(toYYYYMMDD(toStartOfMonth(addMonths(now(), -1))))
+        and pdate &lt; toString(toYYYYMMDD(toStartOfMonth(now())))
+        group by country_id
+        order by active_cnt desc
+        limit 5
+        ) a,
+        (
+        select count() as tot_act_cnt
+        from haylou_datawares.dwd_usr_app_active_dt_dfs
+        where pdate &gt;= toString(toYYYYMMDD(toStartOfMonth(addMonths(now(), -1))))
+        and pdate &lt; toString(toYYYYMMDD(toStartOfMonth(now())))
+        ) b
+        order by active_cnt desc
+    </select>
+
+</mapper>

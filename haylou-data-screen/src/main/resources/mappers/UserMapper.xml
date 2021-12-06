@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.haylou.mapper.UserMapper">
+
+    <select id="getUserSexRatio"  resultType="java.util.HashMap">
+        select a.gender_name, a.cnt * 1.00 / b.tot_usr
+        from (
+                 select gender
+                      , case when gender = 1 then '男' when gender = 2 then '女' else '其它' end as gender_name
+                      , count()                                                              as cnt
+                 from haylou_datawares.dim_usr_info_his_dfs
+                 group by gender
+             ) a,
+             (select count() as tot_usr from haylou_datawares.dim_usr_info_his_dfs) b
+    </select>
+
+
+    <select id="getUserAgeRatio"  resultType="java.util.HashMap">
+        select oo.fd_age_desc, oo.cnt * 1.0 / kk.tot_usr_cnt as age_ratio
+        from (
+                 select case
+                            when aa.fd_age = 1 then '17岁以下'
+                            when aa.fd_age = 2 then '18-24'
+                            when aa.fd_age = 3 then '25-30'
+                            when aa.fd_age = 4 then '31-35'
+                            when aa.fd_age = 5 then '36-40'
+                            when aa.fd_age = 6 then '41以上'
+                            end as fd_age_desc,
+                        count() as cnt
+                 from (
+                          select dateDiff('year', birthday, toDate('2021-10-01')) as age,
+                                 case
+                                     when age &lt;= 17 then 1
+                                     when age &gt;= 18 and age &lt;= 24 then 2
+                                     when age &gt;= 25 and age &lt;= 30 then 3
+                                     when age &gt;= 31 and age &lt;= 35 then 4
+                                     when age &gt;= 36 and age &lt;= 40 then 5
+                                     else 6 end                                   as fd_age
+                          from haylou_datawares.dim_usr_info_his_dfs
+                      ) aa
+                 group by aa.fd_age
+
+             ) oo,
+             (select count() as tot_usr_cnt from haylou_datawares.dim_usr_info_his_dfs bb) kk
+        order by fd_age_desc asc
+    </select>
+
+    <select id="getTotUserRegCnt"  resultType="java.util.HashMap">
+        select count() as tot_users from haylou_datawares.dim_usr_info_his_dfs
+    </select>
+
+    <select id="getRegCntByConuntry"  resultType="java.util.HashMap">
+        select regis_country,
+               count() as reg_cnt
+        from haylou_datawares.dim_usr_info_his_dfs
+        group by regis_country
+    </select>
+
+    <select id="getRegCntLastMon"  resultType="java.util.HashMap">
+        select count() as regist_cnt
+        from haylou_datawares.dim_usr_info_his_dfs
+        where pdate &lt; toString(toYYYYMMDD(toStartOfMonth(now())))
+          and pdate &gt;= toString(toYYYYMMDD(toStartOfMonth(addMonths(now(), -1))))
+    </select>
+
+</mapper>

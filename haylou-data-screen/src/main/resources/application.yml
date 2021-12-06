@@ -1,0 +1,56 @@
+server:
+  port: 7000
+
+spring:
+  application:
+    name: haylou-data-screen
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    click:
+      driverClassName: ru.yandex.clickhouse.ClickHouseDriver
+      url: jdbc:clickhouse://172.16.20.101:9090/haylou_report
+      username: haylou_ck
+      initialSize: 10
+      maxActive: 100
+      minIdle: 10
+      maxWait: 6000
+      validationQuery: SELECT 1
+      testWhileIdle: true
+      testOnBorrow: false
+      testOnReturn: false
+  profiles:
+    active: dev
+
+
+mybatis-plus:
+  typeAliasesPackage: com.haylou.entity
+  mapperLocations: classpath:mappers/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.slf4j.Slf4jImpl
+
+  #  mapperLocations: classpath:xdclass/mapper/*.xml
+
+
+  #  datasource:
+#    type: com.alibaba.druid.pool.DruidDataSource
+#
+#
+#      driverClassName: ru.yandex.clickhouse.ClickHouseDriver
+#      url: jdbc:clickhouse://127.0.0.1:8123/default
+#      initialSize: 10
+#      maxActive: 100
+#      minIdle: 10
+#      maxWait: 6000
+
+#  datasource:
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://localhost:3306/cloud-user?useUnicode=true&characterEncoding=UTF-8&serverTimezone=UTC
+#    username: root
+#    password: root1234
+
+#mybatis:
+#  configuration:
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+logging:
+  config: classpath:logback-spring.xml
+#    map-underscore-to-camel-case: true
